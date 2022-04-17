@@ -1,7 +1,20 @@
-const io = require("socket.io")(8900, {
+const app = require("express")();
+const cors = require("cors");
+const server = require("http").createServer(app);
+
+
+const io = require("socket.io")(server, {
   cors: {
     origin: "http://localhost:3000",
   },
+});
+
+app.use(cors());
+
+const PORT = process.env.PORT || 8900;
+
+app.get('/', (req, res) => {
+	res.send('Running');
 });
 
 let users = [];
@@ -46,3 +59,6 @@ io.on("connection", (socket) => {
     io.emit("getUsers", users);
   });
 });
+
+
+server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
