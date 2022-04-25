@@ -41,8 +41,8 @@ io.on("connection", (socket) => {
 	
 	//take userId and socketId from user
 	socket.on("addUser", (userId) => {
-		addUser(userId, socket.id);
 		io.emit("me", socket.id);
+		addUser(userId, socket.id);
 		io.emit("getUsers", users);
 	});
 	
@@ -66,6 +66,8 @@ io.on("connection", (socket) => {
 
 	socket.on("disconnect", () => {
 		socket.broadcast.emit("callEnded")
+		removeUser(socket.id);
+		io.emit("getUsers", users);
 	});
 
 	socket.on("callUser", ({ userToCall, signalData, from, name }) => {
