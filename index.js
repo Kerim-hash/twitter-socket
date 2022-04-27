@@ -3,18 +3,18 @@ const server = require("http").createServer(app);
 const cors = require("cors");
 
 const io = require("socket.io")(server, {
-	cors: {
-		origin: "*",
-		methods: [ "GET", "POST" ]
-	}
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
 });
 
 app.use(cors());
 
 const PORT = process.env.PORT || 8000;
 
-app.get('/', (req, res) => {
-	res.send('Running');
+app.get("/", (req, res) => {
+  res.send("Running");
 });
 
 let users = [];
@@ -32,53 +32,37 @@ const getUser = (userId) => {
   return users.find((user) => user.userId === userId);
 };
 
-
 io.on("connection", (socket) => {
-	
-	
-	// const user = users
-	console.log("a user connected.");
-	
-	//take userId and socketId from user
-	socket.on("addUser", (userId) => {
-		io.emit("me", socket.id);
-		addUser(userId, socket.id);
-		io.emit("getUsers", users);
-	});
-	
-
-	//send and get message
+  // const user = users
+  console.log("a user connected.");
+  socket.on("addUser", (userId) => {
+    addUser(userId, socket.id);
+    io.emit("getUsers", users);
+  });
+  
+  //send and get message
   socket.on("sendMessage", ({ senderId, receiverId, text }) => {
     const user = getUser(receiverId);
-
-   user &&  io.to(user.socketId).emit("getMessage", {
-      senderId,
-      text,
-    });
+    user &&
+      io.to(user.socketId).emit("getMessage", {
+        senderId,
+        text,
+      });
+  });
+  
+  socket.on("disconnect", () => {
+    socket.broadcast.emit("callEnded");
+    removeUser(socket.id);
+    io.emit("getUsers", users);
   });
 
-  //when disconnect
-  // socket.on("disconnect", () => {
-  //   console.log("a user disconnected!");
-  //   removeUser(socket.id);
-  //   io.emit("getUsers", users);
-  // });
+  socket.on("callUser", ({ userToCall, signalData, from }) => {
+    io.to(userToCall).emit("callUser", { signal: signalData, from });
+  });
 
-	socket.on("disconnect", () => {
-		socket.broadcast.emit("callEnded")
-		removeUser(socket.id);
-		io.emit("getUsers", users);
-	});
-
-	socket.on("callUser", ({ userToCall, signalData, from, name }) => {
-		io.to(userToCall).emit("callUser", { signal: signalData, from, name });
-	});
-
-	socket.on("answerCall", (data) => {
-		io.to(data.to).emit("callAccepted", data.signal)
-	});
-  
+  socket.on("answerCall", (data) => {
+    io.to(data.to).emit("callAccepted", data.signal);
+  });
 });
-
 
 server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
