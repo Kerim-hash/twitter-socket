@@ -1,12 +1,14 @@
 {
-    "env": {
-      "MY_KEY": "this is the value",
-      "SECRET": "@my-secret-name"
-    },
-    "build": {
-      "env": {
-        "MY_KEY": "this is the value",
-        "SECRET": "@my-secret-name"
-      }
-    }
-  }
+    "builds": [
+        {
+            "src": "./index.js",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/"
+        }
+    ]
+}
