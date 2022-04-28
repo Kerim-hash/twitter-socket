@@ -9,10 +9,7 @@ const io = require("socket.io")(server, {
     methods: ["GET", "POST"],
   },
 });
-
-
 const PORT = process.env.PORT || 8000;
-
 app.get("/", (req, res) => {
   res.send("Running");
 });
