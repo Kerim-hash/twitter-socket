@@ -1,6 +1,7 @@
 const app = require("express")();
 const server = require("http").createServer(app);
 const cors = require("cors");
+app.use(cors());
 
 const io = require("socket.io")(server, {
   cors: {
@@ -9,7 +10,6 @@ const io = require("socket.io")(server, {
   },
 });
 
-app.use(cors());
 
 const PORT = process.env.PORT || 8000;
 
@@ -39,25 +39,40 @@ io.on("connection", (socket) => {
     addUser(userId, socket.id);
     io.emit("getUsers", users);
   });
-  
+
   //send and get message
-  socket.on("sendMessage", ({ senderId, receiverId, text }) => {
-    const user = getUser(receiverId);
+  socket.on("sendMessage", ({ senderId, receiverID, text }) => {
+    const user = getUser(receiverID);
     user &&
       io.to(user.socketId).emit("getMessage", {
         senderId,
         text,
       });
   });
-  
+
   socket.on("disconnect", () => {
     socket.broadcast.emit("callEnded");
     removeUser(socket.id);
     io.emit("getUsers", users);
   });
 
+  socket.on("sendNotification", ({ senderName, receiverID, type, tweetId, avatar }) => {
+    const user = getUser(receiverID);
+    user && io.to(user.socketId).emit("getNotification", {
+      senderName,
+      type,
+      tweetId,
+      avatar
+    });
+  });
+
   socket.on("callUser", ({ userToCall, signalData, from }) => {
-    io.to(userToCall).emit("callUser", { signal: signalData, from });
+    const user = getUser(userToCall);
+    const sernderID = getUser(from);
+    io.to(user.socketId).emit("callUser", {
+      signal: signalData,
+      from: sernderID.socketId,
+    });
   });
 
   socket.on("answerCall", (data) => {
