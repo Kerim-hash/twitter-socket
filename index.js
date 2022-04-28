@@ -56,11 +56,11 @@ io.on("connection", (socket) => {
     io.emit("getUsers", users);
   });
 
-  socket.on("sendNotification", ({ senderName, receiverID, type, tweetId, avatar }) => {
+  socket.on("sendNotification", ({ senderName, receiverID,type, tweetId, avatar }) => {
     const user = getUser(receiverID);
     user && io.to(user.socketId).emit("getNotification", {
       senderName,
-      type,
+      type, 
       tweetId,
       avatar
     });
