@@ -82,6 +82,6 @@ io.on("connection", (socket) => {
 
 
 
-server.listen(process.env.PORT || 5000, () => {
-  console.log(`Express is working on port ${5000}`);
+server.listen(PORT, () => {
+  console.log(`Express is working on port ${PORT}`);
 });
